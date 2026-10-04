@@ -1,5 +1,5 @@
 %% Initializazion
-clear all
+clear
 clc
 
 %% Data extraction
@@ -12,6 +12,11 @@ data= {data1.data1, data2.data2, data3.data3};
 tiledlayout(3,1);
 for i = 1:3
     nexttile
-    plot(data{i});
+    if i == 2
+        plot(data{i}(1,:), data{i}(2,:)); 
+        axis equal
+    else
+        plot(data{i});
+    end
     grid on
 end
