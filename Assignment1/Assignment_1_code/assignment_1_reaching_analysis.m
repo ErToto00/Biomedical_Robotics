@@ -27,7 +27,9 @@ clear; close all; clc;
 
 %% 0. Settings
 % -------------------------------------------------------------------------
-matFile = 'Group_X.mat';   % your group's data file
+sessionPath = "C:\Biomedical_Robotics\Assignment1";
+make_group_mat(sessionPath, 'Cometa', 'Group_6.mat');
+matFile = 'Group_6.mat';   % your group's data file
 task    = 'centerout';     % which task to analyze: 'centerout' or 'random'
 fsDown  = 100;             % rate we use after the envelope is computed [Hz]
 
@@ -73,6 +75,11 @@ muscleCols = strrep(muscles, ' ', '_');               % 'R biceps' -> 'R_biceps'
 % Hint: D{:, strcat('raw_', muscleCols)} takes the 4 raw columns at once.
 
 % YOUR CODE HERE
+sessionPath = "C:\Biomedical_Robotics\Assignment1";
+make_group_mat(sessionPath, 'Cometa', 'Group_6.mat');
+group6 = load('Group_6.mat');
+
+
 
 
 % Units: the raw EMG is stored in ADC counts. The sensors use a signed
