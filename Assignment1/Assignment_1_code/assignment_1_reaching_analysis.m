@@ -27,8 +27,11 @@ clear; close all; clc;
 
 %% 0. Settings
 % -------------------------------------------------------------------------
-sessionPath = "C:\Biomedical_Robotics\Assignment1";
+%[folderPath, ~, ~] = fileparts(mfilename('fullpath'));
+sessionPath = fileparts(mfilename('fullpath'));
+sessionPath = fullfile(sessionPath, 'ID_02_Session_4');
 make_group_mat(sessionPath, 'Cometa', 'Group_6.mat');
+
 matFile = 'Group_6.mat';   % your group's data file
 task    = 'centerout';     % which task to analyze: 'centerout' or 'random'
 fsDown  = 100;             % rate we use after the envelope is computed [Hz]
@@ -75,11 +78,12 @@ muscleCols = strrep(muscles, ' ', '_');               % 'R biceps' -> 'R_biceps'
 % Hint: D{:, strcat('raw_', muscleCols)} takes the 4 raw columns at once.
 
 % YOUR CODE HERE
-sessionPath = "C:\Biomedical_Robotics\Assignment1";
-make_group_mat(sessionPath, 'Cometa', 'Group_6.mat');
-group6 = load('Group_6.mat');
-
-
+t = D{:,strcat('t')};
+raw = D{:, strcat('raw_', muscleCols)};
+envMCI = D{:, strcat('env_', muscleCols)};
+cursorPx = D{:, strcat("cursor_", ["x","y"], "_px")};
+cursorCm = D{:, strcat("cursor_", ["x","y"], "_cm")};
+targetPx = targets{:, strcat("target_", ["x","y"], "_px")};
 
 
 % Units: the raw EMG is stored in ADC counts. The sensors use a signed
@@ -121,6 +125,27 @@ fprintf('Muscles: %s\n', strjoin(muscles, ', '));
 %   g) filtering can dip slightly below 0: set negative values to 0
 
 % YOUR CODE HERE
+bandpassBound = [30 450];
+lowpassBound = 5;
+
+raw = raw / mean(raw);
+
+emgFilt = bandpass(raw, bandpassBound, fs);
+emgRect = abs(emgFilt);
+envOurs = lowpass(emgRect, lowpassBound, fs);
+
+for i = 1:4
+    envOurs(:,i) = envOurs(:, i) / MAX(i);  
+end
+
+for i = 1:length(envOurs)
+    for j = 1:length(envOurs).T
+        if(envOurs(i,j) < 0)
+            envOurs(i,j) = 0;
+        end
+    end
+end
+
 
 
 % --- Figure 1: the preprocessing steps for each muscle, on a 3 s window
