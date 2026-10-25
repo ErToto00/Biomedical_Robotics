@@ -150,31 +150,35 @@ envOursNorm(envOursNorm < 0) = 0;
 %   - rectified EMG with the envelope on top [uV]
 % Label the axes with units.
 
-t0 = t(7000);
+t0 = t(15000);
 windowIdx = t >= t0 & t <= t0 + 3;
-figure(1);
-tiledlayout(4,2);
 
 % Raw and filtered signal for each muscle
+figure(1)
+tiledlayout(4,1)
 for i = 1:4
-    nexttile(2*i-1)
+    nexttile
     plot(t(windowIdx), raw(windowIdx,i))
     hold on;
     plot(t(windowIdx), emgFilt(windowIdx,i))
     title(strcat('Raw and filtered signals in muscle: ', muscles{i}))
     xlabel("s")
     ylabel("uV")
+    legend("Raw signal", "Filtered signal")
 end 
 
 % Rectified EMG and envelopes
+figure(2)
+tiledlayout(4,1)
 for i = 1:4
-    nexttile(2*i)
+    nexttile
     plot(t(windowIdx), emgRect(windowIdx,i))
     hold on 
     plot(t(windowIdx), envOursUV(windowIdx,i))
     title(strcat('Rectified signal and envelopes in muscle: ', muscles{i}))
     xlabel("s")
     ylabel("uV")
+    legend("Rectified EMG", "Envelope")
 end 
 
 
