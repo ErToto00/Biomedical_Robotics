@@ -190,6 +190,37 @@ end
 
 % YOUR CODE HERE
 
+% Correlation matrices
+corrMatrices = cell(1,4);
+for i = 1:4
+    R = corrcoef(envMCI(:,i), envOursNorm(:, i));
+    corrMatrices{i} = R;
+end
+
+% Delay
+delayValues = cell(1,4);
+for i = 1:4
+    [crossCorrelation, lags] = xcorr(envOursNorm(:,i) - mean(envOursNorm(:,i)), ...
+                                      envMCI(:,i) - mean(envMCI(:,i)), 'coeff');
+    [~, peakIndex] = max(crossCorrelation);
+    delayValues{i} = lags(peakIndex) / fs * 1000; % delay in ms
+end
+
+% Envelope plots
+t1 = t(15000);
+windowIdx2 = t >= t1 & t <= t1 + 30;
+
+figure(3)
+tiledlayout(4,1)
+for i = 1:4
+    nexttile
+    plot(t(windowIdx2), envMCI(windowIdx2,i))
+    hold on 
+    plot(t(windowIdx2), envOursNorm(windowIdx2,i))
+    title(strcat('Envelopes plot'))
+    xlabel("s")
+    legend("envMCI", "envOursNorm")
+end 
 
 % --- Downsample to 100 Hz
 % WHY only now: the envelope is a slow signal (below 5 Hz), so 100 Hz is
@@ -201,6 +232,10 @@ dt   = 1 / fsDown;                         % time between downsampled samples [s
 %   tD, envOursD, envMCID, cursorCmD
 
 % YOUR CODE HERE
+tD = downsample(t, step);
+envOursD = downsample(envOursNorm, step);
+envMCID = downsample(envMCI, step);
+cursorCmD = downsample(cursorCm, step);
 
 
 
