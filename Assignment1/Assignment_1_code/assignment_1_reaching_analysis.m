@@ -125,34 +125,31 @@ fprintf('Muscles: %s\n', strjoin(muscles, ', '));
 %   g) filtering can dip slightly below 0: set negative values to 0
 
 % YOUR CODE HERE
-bandpassBound = [30 450];
-lowpassBound = 5;
 
-raw = raw / mean(raw);
+% Filter design
+[bBand, aBand] = butter(4, [30 450] / (fs / 2), 'bandpass');
+[bLow, aLow] = butter(4, 5 / (fs / 2), 'low');
 
-emgFilt = bandpass(raw, bandpassBound, fs);
+% DC offset removal
+raw = raw - mean(raw);
+
+% Filtering steps
+emgFilt = filtfilt(bBand, aBand, raw);
 emgRect = abs(emgFilt);
-envOurs = lowpass(emgRect, lowpassBound, fs);
+envOurs = filtfilt(bLow, aLow, emgRect);
 
-for i = 1:4
-    envOurs(:,i) = envOurs(:, i) / MAX(i);  
-end
+% Normalization
+envOurs = envOurs ./ MAX;  
 
-for i = 1:length(envOurs)
-    for j = 1:length(envOurs).T
-        if(envOurs(i,j) < 0)
-            envOurs(i,j) = 0;
-        end
-    end
-end
-
-
+% Setting post-filtering negative values to 0 
+envOurs(envOurs < 0) = 0;
 
 % --- Figure 1: the preprocessing steps for each muscle, on a 3 s window
 % with some activity (easier to see). For each muscle plot:
 %   - raw and filtered EMG [uV]
 %   - rectified EMG with the envelope on top [uV]
 % Label the axes with units.
+
 
 % YOUR CODE HERE
 
