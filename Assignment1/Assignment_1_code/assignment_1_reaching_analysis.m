@@ -136,13 +136,13 @@ raw = raw - mean(raw);
 % Filtering steps
 emgFilt = filtfilt(bBand, aBand, raw);
 emgRect = abs(emgFilt);
-envOurs = filtfilt(bLow, aLow, emgRect);
+envOursUV = filtfilt(bLow, aLow, emgRect);
 
 % Normalization
-envOurs = envOurs ./ MAX;  
+envOursNorm = envOursUV ./ MAX;  
 
 % Setting post-filtering negative values to 0 
-envOurs(envOurs < 0) = 0;
+envOursNorm(envOursNorm < 0) = 0;
 
 % --- Figure 1: the preprocessing steps for each muscle, on a 3 s window
 % with some activity (easier to see). For each muscle plot:
@@ -150,8 +150,32 @@ envOurs(envOurs < 0) = 0;
 %   - rectified EMG with the envelope on top [uV]
 % Label the axes with units.
 
+t0 = t(7000);
+windowIdx = t >= t0 & t <= t0 + 3;
+figure(1);
+tiledlayout(4,2);
 
-% YOUR CODE HERE
+% Raw and filtered signal for each muscle
+for i = 1:4
+    nexttile(2*i-1)
+    plot(t(windowIdx), raw(windowIdx,i))
+    hold on;
+    plot(t(windowIdx), emgFilt(windowIdx,i))
+    title(strcat('Raw and filtered signals in muscle: ', muscles{i}))
+    xlabel("s")
+    ylabel("uV")
+end 
+
+% Rectified EMG and envelopes
+for i = 1:4
+    nexttile(2*i)
+    plot(t(windowIdx), emgRect(windowIdx,i))
+    hold on 
+    plot(t(windowIdx), envOursUV(windowIdx,i))
+    title(strcat('Rectified signal and envelopes in muscle: ', muscles{i}))
+    xlabel("s")
+    ylabel("uV")
+end 
 
 
 % --- Compare your envelopes with the MCI ones (envMCI)
