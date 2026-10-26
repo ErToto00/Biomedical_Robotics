@@ -217,7 +217,7 @@ for i = 1:4
     plot(t(windowIdx2), envMCI(windowIdx2,i))
     hold on 
     plot(t(windowIdx2), envOursNorm(windowIdx2,i))
-    title(strcat('Envelopes plot'))
+    title(strcat('Envelope plots for muscle: ', muscles{i}))
     xlabel("s")
     legend("envMCI", "envOursNorm")
 end 
@@ -273,6 +273,15 @@ deadZone = 0.05;
 
 % YOUR CODE HERE
 
+% Dead zone application
+for i = 1:4
+    envOursD(envOursD(:,i) < deadZone, i) = 0;
+    envMCID(envMCID(:,i) < deadZone, i) = 0;
+end
+
+% Cursor velocity calculation
+velOurs = gain*envOursD*W';
+velMCI = gain*envMCID*W';
 
 
 %% PART 3 - Rebuild the cursor from the envelopes
@@ -299,11 +308,56 @@ spawnT   = targets.spawn_time;                   % when each target appears [s]
 % sample (errOurs, errMCI [cm]) and print its mean.
 
 % YOUR CODE HERE
+posOurs = zeros(numel(tD), 2);
+posMCI = zeros(numel(tD), 2);
+posOurs(1, :) = cursorCmD(1, :);
+posMCI(1, :) = cursorCmD(1, :);
+previous_position_ours = posOurs(1, :);
+previous_position_MCI = posMCI(1, :);
+
+for k = 2:numel(tD)
+
+    % Position update
+    posOurs(k, :) = posOurs(k-1, :) + velOurs(k, :)*dt;
+    posMCI(k, :) = posMCI(k-1, :) + velMCI(k, :)*dt;
+    
+    % Clipping control
+    if max(posOurs(k, :)) < 0
+        posOurs(k, :) = [0 0];
+    end
+
+    if max(posMCI(k, :)) < 0
+        posMCI(k, :) = [0 0];
+    end
+
+    if min(posOurs(k, :)) > screenCm
+        posOurs(k, :) = screenCm;
+    end
+
+    if min(posMCI(k, :)) > screenCm
+        posMCI(k, :) = screenCm;
+    end 
+
+    % Position reset
+    if resetAtEachTarget
+        resetIdx = find(tD(k) >= spawnT, 1, 'last');
+        if resetIdx > 0 && tD(k-1) < spawnT(resetIdx)
+            posOurs(k,:) = cursorCmD(k,:);
+            posMCI(k,:) = cursorCmD(k,:);
+        end
+    end
+
+end
+
+errOurs = vecnorm(posOurs - cursorCmD, 2, 2);
+errMCI = vecnorm(posMCI - cursorCmD, 2, 2);
+fprintf('Mean cursor error: ours = %.3f cm, MCI = %.3f cm\n', mean(errOurs), mean(errMCI));
 
 
 % Targets, converted to cm -> targCm (nTargets x 2)
 
 % YOUR CODE HERE
+targCm = targetPx .* (screenCm ./ info.screen_px);
 
 
 % --- Animation: the cursor moving on the screen, target by target (given)
@@ -358,3 +412,15 @@ end
 %      - the overshoots [count]        (targets.overshoots)
 
 % YOUR CODE HERE
+
+isHit = ~isnan([targets.hit_time]);
+targetPositions = [[targets.target_x_px]' [targets.target_y_px]'];
+isOutward = any(targetPositions ~= centerPx, 2);
+selectedTargets = targets(isHit & isOutward);
+    
+reachTimes = selectedTargets.reach_time;
+overshoots = selectedTargets.overshoots;
+figure;
+subplot(2,1,1); plot(reachTimes, 'o-'); ylabel('Reach time [s]'); grid on;
+subplot(2,1,2); plot(overshoots, 'bar'); ylabel('Overshoots [count]'); xlabel('Reach'); grid on;
+
