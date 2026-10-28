@@ -153,32 +153,28 @@ envOursNorm(envOursNorm < 0) = 0;
 t0 = t(15000);
 windowIdx = t >= t0 & t <= t0 + 3;
 
-% Raw and filtered signal for each muscle
 figure(1)
-tiledlayout(4,1)
+tiledlayout(4, 2, 'TileSpacing', 'compact')
 for i = 1:4
-    nexttile
-    plot(t(windowIdx), raw(windowIdx,i))
-    hold on;
-    plot(t(windowIdx), emgFilt(windowIdx,i))
-    title(strcat('Raw and filtered signals in muscle: ', muscles{i}))
-    xlabel("s")
-    ylabel("uV")
-    legend("Raw signal", "Filtered signal")
-end 
+    % Left column: raw and filtered EMG
+    nexttile(2*i - 1)
+    plot(t(windowIdx), raw(windowIdx, i))
+    hold on
+    plot(t(windowIdx), emgFilt(windowIdx, i))
+    title(strcat('Raw and filtered - ', muscles{i}))
+    xlabel('t [s]')
+    ylabel('EMG [\muV]')
+    legend('Raw signal', 'Filtered signal')
 
-% Rectified EMG and envelopes
-figure(2)
-tiledlayout(4,1)
-for i = 1:4
-    nexttile
-    plot(t(windowIdx), emgRect(windowIdx,i))
-    hold on 
-    plot(t(windowIdx), envOursUV(windowIdx,i))
-    title(strcat('Rectified signal and envelopes in muscle: ', muscles{i}))
-    xlabel("s")
-    ylabel("uV")
-    legend("Rectified EMG", "Envelope")
+    % Right column: rectified EMG and envelope
+    nexttile(2*i)
+    plot(t(windowIdx), emgRect(windowIdx, i))
+    hold on
+    plot(t(windowIdx), envOursUV(windowIdx, i))
+    title(strcat('Rectified and envelope - ', muscles{i}))
+    xlabel('t [s]')
+    ylabel('EMG [\muV]')
+    legend('Rectified EMG', 'Envelope')
 end 
 
 
@@ -210,7 +206,7 @@ end
 t1 = t(15000);
 windowIdx2 = t >= t1 & t <= t1 + 30;
 
-figure(3)
+figure(2)
 tiledlayout(4,1)
 for i = 1:4
     nexttile
@@ -312,8 +308,6 @@ posOurs = zeros(numel(tD), 2);
 posMCI = zeros(numel(tD), 2);
 posOurs(1, :) = cursorCmD(1, :);
 posMCI(1, :) = cursorCmD(1, :);
-previous_position_ours = posOurs(1, :);
-previous_position_MCI = posMCI(1, :);
 
 for k = 2:numel(tD)
 
@@ -322,21 +316,11 @@ for k = 2:numel(tD)
     posMCI(k, :) = posMCI(k-1, :) + velMCI(k, :)*dt;
     
     % Clipping control
-    if max(posOurs(k, :)) < 0
-        posOurs(k, :) = [0 0];
-    end
+    posOurs(k, :) = max(posOurs(k,:), [0, 0]);
+    posMCI(k, :) = max(posMCI(k,:), [0, 0]);
 
-    if max(posMCI(k, :)) < 0
-        posMCI(k, :) = [0 0];
-    end
-
-    if min(posOurs(k, :)) > screenCm
-        posOurs(k, :) = screenCm;
-    end
-
-    if min(posMCI(k, :)) > screenCm
-        posMCI(k, :) = screenCm;
-    end 
+    posOurs(k, :) = min(posOurs(k, :), screenCm);
+    posMCI(k, :) = min(posMCI(k, :), screenCm);
 
     % Position reset
     if resetAtEachTarget
@@ -358,7 +342,6 @@ fprintf('Mean cursor error: ours = %.3f cm, MCI = %.3f cm\n', mean(errOurs), mea
 
 % YOUR CODE HERE
 targCm = targetPx .* (screenCm ./ info.screen_px);
-
 
 % --- Animation: the cursor moving on the screen, target by target (given)
 % Black = the real (logged) cursor, red = the one we rebuilt from the EMG.
@@ -414,13 +397,107 @@ end
 % YOUR CODE HERE
 
 isHit = ~isnan([targets.hit_time]);
-targetPositions = [[targets.target_x_px]' [targets.target_y_px]'];
+targetPositions = [[targets.target_x_px] [targets.target_y_px]];
 isOutward = any(targetPositions ~= centerPx, 2);
-selectedTargets = targets(isHit & isOutward);
+selectedTargets = targets(isHit & isOutward, :);
     
 reachTimes = selectedTargets.reach_time;
 overshoots = selectedTargets.overshoots;
 figure;
 subplot(2,1,1); plot(reachTimes, 'o-'); ylabel('Reach time [s]'); grid on;
-subplot(2,1,2); plot(overshoots, 'bar'); ylabel('Overshoots [count]'); xlabel('Reach'); grid on;
+subplot(2,1,2); plot(overshoots, 'o-'); ylabel('Overshoots [count]'); xlabel('Reach'); grid on;
 
+%% PART 5 - Robot reaching: drive a 2-link robot arm with your cursor
+% -------------------------------------------------------------------------
+% Picture a planar arm with two links in front of the screen: the shoulder
+% is at the origin, the screen center is 0.40 m in front of it. The screen
+% is shrunk to 0.40 m wide, so that every point of it is within reach of
+% the arm, whatever the size of the monitor used in the recording. The
+% rebuilt cursor tells the HAND where to go; the robot needs JOINT angles
+% q = [q1 q2] (shoulder, elbow). The Jacobian J links the two speeds:
+%
+%       hand velocity = J(q) * joint velocity
+%
+% so at every step we invert it to get the joint velocity, and integrate it
+% to get the angles (resolved-rate control):
+%
+%       joint velocity = J(q) \ hand velocity
+%
+% Formulas you need (s1 = sin(q1), c1 = cos(q1), s12 = sin(q1+q2), c12 = cos(q1+q2)):
+%   forward kinematics (hand position):
+%       x = L1*c1 + L2*c12,   y = L1*s1 + L2*s12
+%   Jacobian:
+%       J = [ -L1*s1 - L2*s12 , -L2*s12 ;
+%              L1*c1 + L2*c12 ,  L2*c12 ]
+%   inverse kinematics (only for the first point, "elbow down"):
+%       q2 = acos((x^2 + y^2 - L1^2 - L2^2) / (2*L1*L2))
+%       q1 = atan2(y, x) - atan2(L2*sin(q2), L1 + L2*cos(q2))
+
+L1 = 0.30;  L2 = 0.30;                     % link lengths [m]
+centerRobot = [0 0.40];                    % screen center in the robot frame [m]
+scale = 0.40 / (screenCm(1) / 100);        % screen -> robot: the screen becomes 0.40 m wide
+Kcorr = 10;                                % correction gain [1/s], see step 4
+nD = numel(tD);
+
+% 1) Screen frame -> robot frame. From posOurs [cm, y down] compute the
+%    hand reference handRef [m, y up] (nD x 2):
+%      - subtract the screen center in cm (centerPx * cmPerPx)
+%      - convert cm -> m and multiply by scale
+%      - flip y (screen y grows downward, robot y grows upward)
+%      - add centerRobot
+%    Do the same for the targets: targCm -> targRobot (nTargets x 2).
+
+% YOUR CODE HERE
+
+
+% 2) Hand velocity handVel [m/s] (nD x 2): derivative of handRef
+%    (gradient of each column, divided by dt).
+
+% YOUR CODE HERE
+
+
+% 3) Starting angles: inverse kinematics of the first point handRef(1,:)
+%    (formulas above). Store them in q(1,:), with q = zeros(nD, 2).
+
+% YOUR CODE HERE
+
+
+% 4) For each sample k = 1..nD:
+%      - compute the hand position with forward kinematics -> handArm(k,:)
+%      - compute J at q(k,:) and its determinant -> detJ(k)
+%      - if k < nD: joint velocity with the Jacobian, then integrate:
+%            qdot = J \ (handVel(k,:) + Kcorr*(handRef(k,:) - handArm(k,:)))'
+%            q(k+1,:) = q(k,:) + qdot' * dt
+%    The Kcorr term pulls the hand back toward the reference: without it,
+%    small integration errors (and the jumps when the cursor is reset at a
+%    new target) would never be undone.
+
+% YOUR CODE HERE
+
+
+% 5) Check and plot:
+%      - distance between handArm and handRef [mm]: print its mean and max
+%      - the smallest |detJ|: near 0 = singularity (arm fully stretched)
+%      - figure: hand path with the targets, and the joint angles [deg] in time
+
+% YOUR CODE HERE
+
+
+% --- Animation of the arm (given): plays in real time
+if animateArm
+    figure('Name', 'Part 5 - robot arm animation');
+    plot(targRobot(:,1), targRobot(:,2), 'go', 'MarkerSize', 10, 'LineWidth', 2); hold on;
+    hArm  = plot([0 0 0], [0 0 0], 'b-o', 'LineWidth', 3);
+    hPath = plot(nan, nan, 'r');
+    axis equal; axis([-0.35 0.35 -0.05 0.65]); xlabel('x [m]'); ylabel('y [m]');
+    tic; k = 1;
+    while k <= nD
+        elbow = [L1*cos(q(k,1)), L1*sin(q(k,1))];
+        set(hArm,  'XData', [0 elbow(1) handArm(k,1)], 'YData', [0 elbow(2) handArm(k,2)]);
+        set(hPath, 'XData', handArm(1:k,1), 'YData', handArm(1:k,2));
+        title(sprintf('t = %.1f s', tD(k)));
+        drawnow;
+        k = max(k + 1, round(toc * fsDown) + 1);   % jump to the sample of "now"
+        pause(max(0, (k - 1) / fsDown - toc));     % ahead of the clock? wait
+    end
+end
