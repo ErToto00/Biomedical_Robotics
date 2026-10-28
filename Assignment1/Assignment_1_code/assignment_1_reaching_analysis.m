@@ -154,7 +154,7 @@ t0 = t(15000);
 windowIdx = t >= t0 & t <= t0 + 3;
 
 figure(1)
-tiledlayout(4, 2, 'TileSpacing', 'compact')
+tiledlayout(4, 2)
 for i = 1:4
     % Left column: raw and filtered EMG
     nexttile(2*i - 1)
@@ -164,7 +164,6 @@ for i = 1:4
     title(strcat('Raw and filtered - ', muscles{i}))
     xlabel('t [s]')
     ylabel('EMG [\muV]')
-    legend('Raw signal', 'Filtered signal')
 
     % Right column: rectified EMG and envelope
     nexttile(2*i)
@@ -174,7 +173,6 @@ for i = 1:4
     title(strcat('Rectified and envelope - ', muscles{i}))
     xlabel('t [s]')
     ylabel('EMG [\muV]')
-    legend('Rectified EMG', 'Envelope')
 end 
 
 
