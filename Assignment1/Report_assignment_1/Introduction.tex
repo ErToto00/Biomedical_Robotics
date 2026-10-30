@@ -1,0 +1,18 @@
+\section{\large {Introduction}}
+
+This first assignment of the course essentially consists in steering a cursor with four different muscles. The group was requested to choose a person who would have worn the MCI to record a reach session. This was composed of a setup and calibration phase and a play part. In conclusion, once we had our data, the main objective was to rebuild the cursor from the raw EMG data and compare them.
+
+More in detail, the assignment can be divided in 3 parts: 
+\begin{itemize}
+    \item Part 1: Band-passing the raw EMG signal in a range of 30-450Hz, then rectifying it and applying a low-pass filter at 5Hz. This is done to obtain envelopes.
+    \item Part 2: Using the gains and the envelope to create the map that goes from muscle intensity to cursor velocity.
+    \item Part 3: Integrating the cursor velocity into a position and animating it with the targets. It is requested to compare it with the logged cursor.
+    \item Bonus part: Using our cursor to drive a simulated 2-link robot arm.
+\end{itemize}
+
+\subsection{MCI}
+An MCI (Myoelectric Computer Interface) system is a hardware and software architecture used for neuro-rehabilitation purposes. The system acquires electric activity from the muscles (EMG signals, which stands for electromyographic signals) via surface sensors placed on the patient's limbs.
+The signals are elaborated in real time and projected on a display. The patient uses this visual biofeedback to correct their incorrect muscular activation schemes to help their brain re-label correct movements. 
+
+
+
