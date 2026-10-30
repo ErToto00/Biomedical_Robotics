@@ -38,6 +38,7 @@ fsDown  = 100;             % rate we use after the envelope is computed [Hz]
 
 animateCursor     = true;  % Part 3: animate the logged and the rebuilt cursor on the screen
 resetAtEachTarget = true;  % Part 3: restart the rebuilt cursor from the logged one at each new target
+animateArm        = true;  % Part 5: animate the 2-link robotic arm
 
 
 %% 1. Load the data
@@ -184,12 +185,21 @@ end
 
 % YOUR CODE HERE
 
+fprintf('\nPart 1: Correlation matrices\n')
+
 % Correlation matrices
 corrMatrices = cell(1,4);
 for i = 1:4
     R = corrcoef(envMCI(:,i), envOursNorm(:, i));
     corrMatrices{i} = R;
 end
+
+for i = 1:4
+    fprintf('  Muscolo %s:\n', muscles{i});
+    disp(corrMatrices{i});
+end
+
+fprintf('\nPart 1: Delay values for each muscle\n')
 
 % Delay
 delayValues = cell(1,4);
@@ -198,6 +208,11 @@ for i = 1:4
                                       envMCI(:,i) - mean(envMCI(:,i)), 'coeff');
     [~, peakIndex] = max(crossCorrelation);
     delayValues{i} = lags(peakIndex) / fs * 1000; % delay in ms
+end
+
+for i = 1:4
+    fprintf('\nMuscolo %s: delay = %.2f ms\n', muscles{i});
+    disp(delayValues{i})
 end
 
 % Envelope plots
@@ -446,18 +461,33 @@ nD = numel(tD);
 %    Do the same for the targets: targCm -> targRobot (nTargets x 2).
 
 % YOUR CODE HERE
+posCenterlessCm = posOurs - (centerPx * cmPerPx);
+scaledPosition = (posCenterlessCm / 100) * scale;
+flippedPos = scaledPosition .* [1 -1];
+handRef = flippedPos + centerRobot;
 
+targetCenterless = targCm - (centerPx * cmPerPx);
+scaledTargets = (targetCenterless / 100) * scale;
+flippedTarg = scaledTargets .* [1 -1];
+targRobot = flippedTarg + centerRobot;
 
 % 2) Hand velocity handVel [m/s] (nD x 2): derivative of handRef
 %    (gradient of each column, divided by dt).
 
 % YOUR CODE HERE
 
+[~, handVel] = gradient(handRef, dt);
 
 % 3) Starting angles: inverse kinematics of the first point handRef(1,:)
 %    (formulas above). Store them in q(1,:), with q = zeros(nD, 2).
 
 % YOUR CODE HERE
+
+q = zeros(nD, 2);
+firstPoint = handRef(1, :);
+q2_first = acos((firstPoint(1)^2 + firstPoint(2)^2 - L1^2 - L2^2) / (2*L1*L2));
+q1_first = atan2(firstPoint(2), firstPoint(1)) - atan2(L2*sin(q2_first), L1 + L2*cos(q2_first));
+q(1, :) = [q1_first, q2_first];
 
 
 % 4) For each sample k = 1..nD:
@@ -471,15 +501,39 @@ nD = numel(tD);
 %    new target) would never be undone.
 
 % YOUR CODE HERE
-
+handArm = zeros(nD, 2);
+detJ = zeros(nD, 1);
+for k = 1:nD
+   c1 = cos(q(k,1)); s1 = sin(q(k,1));
+   c12 = cos(q(k,1) + q(k,2)); s12 = sin(q(k,1) + q(k,2));
+   handArm(k, :) = [L1*c1 + L2*c12, L1*s1 + L2*s12];
+   J = [-L1*s1 - L2*s12, -L2*s12; L1*c1 + L2*c12, L2*c12];
+   detJ(k) = det(J);
+   if k < nD
+      qdot = J \ (handVel(k,:)' + Kcorr*(handRef(k,:) - handArm(k,:))');
+      q(k+1,:) = q(k,:) + qdot' * dt;
+   end
+end
 
 % 5) Check and plot:
 %      - distance between handArm and handRef [mm]: print its mean and max
 %      - the smallest |detJ|: near 0 = singularity (arm fully stretched)
 %      - figure: hand path with the targets, and the joint angles [deg] in time
+trackingErrorMm = 1000 * vecnorm(handArm - handRef, 2, 2);
+fprintf('Mean tracking error: %.2f mm\nMax tracking error: %.2f mm\n', ...
+    mean(trackingErrorMm), max(trackingErrorMm));
+fprintf('Minimum |det(J)|: %.6g\n', min(abs(detJ)));
 
 % YOUR CODE HERE
+figure('Name', 'Part 5 - resolved-rate control');
+subplot(2,1,1);
+plot(handRef(:,1), handRef(:,2), 'k--', handArm(:,1), handArm(:,2), 'b-'); hold on;
+plot(targRobot(:,1), targRobot(:,2), 'go', 'MarkerSize', 8, 'LineWidth', 1.5);
+axis equal; xlabel('x [m]'); ylabel('y [m]'); legend('Reference', 'Arm', 'Targets');
 
+subplot(2,1,2);
+plot(tD, q * 180/pi); xlabel('Time [s]'); ylabel('Joint angle [deg]');
+legend('q_1', 'q_2'); grid on;
 
 % --- Animation of the arm (given): plays in real time
 if animateArm
