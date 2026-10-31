@@ -1,3 +1,0 @@
-\contentsline {section}{\numberline {1}\large {Introduction}}{2}{}%
-\contentsline {subsection}{\numberline {1.1}MCI}{2}{}%
-\contentsline {section}{\numberline {2}\large {Part 1}}{2}{}%
