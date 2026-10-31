@@ -29,7 +29,7 @@ clear; close all; clc;
 % -------------------------------------------------------------------------
 %[folderPath, ~, ~] = fileparts(mfilename('fullpath'));
 sessionPath = fileparts(mfilename('fullpath'));
-sessionPath = fullfile(sessionPath, 'ID_02_Session_4');
+sessionPath = fullfile(sessionPath, 'ID_6_Session_1');
 make_group_mat(sessionPath, 'Cometa', 'Group_6.mat');
 
 matFile = 'Group_6.mat';   % your group's data file
