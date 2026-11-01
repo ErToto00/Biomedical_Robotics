@@ -1,3 +1,6 @@
 
-\section{\large {Part 3: Cursor reconstruction and position tracking}}
+\section{Part 3: Cursor reconstruction and position tracking}
 
+\subsection{Reaching Analysis Code Overview}
+
+This part performs a reaching analysis by simulating the movement of a cursor based on velocity data and comparing it to a desired cursor position. The code initializes position arrays for two methods: one for the custom algorithm (denoted as 'ours') and one for the Minimum Jerk Control (MCI) method. It then iterates through time steps, updating the positions based on velocity and applying clipping controls to ensure the positions stay within the screen boundaries. If a reset condition is met, the positions are reset to the desired cursor position at the current time step. Finally, the code calculates the error between the simulated positions and the desired positions for both methods and prints the mean cursor error for each method.
