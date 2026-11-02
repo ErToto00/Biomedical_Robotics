@@ -1,0 +1,26 @@
+\newpage
+\section{Part 2: MCI Mapping and Cursor Velocity Computation}
+The second part of the assignment consists of the computation of the cursor velocity starting from the activation envelopes of the four muscles, using the mapping defined by the MCI system.
+The MCI system uses velocity control, in which the level of muscle activation determines the cursor velocity rather than its position. Each axis is controlled by a pair of muscles: the biceps regulate horizontal movement (X), while the trapezius muscles regulate vertical movement (Y). The velocity along each axis is proportional to the difference between the activation levels of the two associated muscles, so that their simultaneous contraction cancels each other out. The gain, equal to 50 cm/s, determines the maximum cursor velocity when one muscle is activated at 100\% and its antagonist is relaxed. These relationships are described by the mapping matrix (W), which allows the velocity components to be calculated from the activation envelopes of the four muscles.\\
+Here the calculations that will determine the speed along each axis is reportedly shown:
+\vspace{10pt}
+
+Part 2 - MCI map:\\
+  x speed        = 50 * (R biceps - L biceps)\\
+  y speed (down) = 50 * (R trapezius - L trapezius)
+
+\vspace{10pt}
+
+Then, a dead zone of 5\% is applied to the activation envelopes (\texttt{envOursD} and \texttt{envMCID}). Every activation value below 0.05 is put equal to 0. This procedure allows to eliminate small residual activations caused by noise, avoiding unwanted cursor movements when muscles are at rest.
+
+At last, the cursor velocities are computed using the modified activation envelopes, by applying the MCI map to the two envelopes matrices.
+\begin{itemize}
+    \item \texttt{velOurs} is the cursor velocity computed using the envelopes reconstructed in Part 1.
+    \item \texttt{velMCI} is the cursor velocity computed using the envelopes registered by the MCI system.
+\end{itemize}
+
+
+
+
+
+
