@@ -1,5 +1,6 @@
-\vspace{30pt}
-\section{Part 1}
+
+\vspace{10pt}
+\section{Part 1: EMG Signal Preprocessing and Envelope Extraction}
 
 \subsection{Data organization}
 In this subsection relative to Part 1 of the assignment, there is a brief explanation of the initial phase of the assignment itself, which consists of three main steps:
@@ -41,28 +42,43 @@ Here the plotted signals are shown for the four muscles:
         Right images: blue $\rightarrow$ rectified signals, red $\rightarrow$ envelopes.}
 \end{figure}
 
-\vspace{10pt}
+The first set of plots (left column) compares the raw EMG signals with the filtered ones. It can be observed that the band-pass filtering preserves the main oscillations of the EMG signals while removing unwanted frequency components.
+
+The second set of plots (right column) shows the rectified signals and their corresponding envelopes. Rectification makes all signal values positive, while low-pass filtering produces a smoother trend that follows the intensity of muscle activation.
+
+The four muscles exhibit different activation patterns:
+\begin{itemize}
+    \item R biceps: shows particularly intense activation towards the end of the selected time window.
+    \item L biceps: exhibits relatively continuous activity distributed over time.
+    \item L trapezius: presents several activation phases, with peaks of significant amplitude.
+    \item R trapezius: shows more intermittent activity, characterized by distinct peaks.
+\end{itemize}
+
 \subsubsection{Comparison between the reconstructed and MCI registered envelopes}
-Then, in the second part, a quantitative comparison is performed between the reconstructed envelopes \texttt{envOursNorm} and the ones registered by the MCI system \texttt{envMCI}. The correlation matrix between the two envelopes is computed for each muscle to assess how the respective trends are similar. Then, the cross-correlation between signals is computed. With this one, the corresponding delay at the maximum value of the cross-correlation is identified, and it is converted from samples to milliseconds. 
+In the second part, a quantitative comparison is performed between the reconstructed envelopes \texttt{envOursNorm} and the ones registered by the MCI system \texttt{envMCI}. The correlation matrix between the two envelopes is computed for each muscle to assess how the respective trends are similar. Then, the cross-correlation between signals is computed. With this one, the corresponding delay at the maximum value of the cross-correlation is identified, and it is converted from samples to milliseconds. 
 
 Here, the results are shown from the Command Window:
 
 \begin{figure}[H]
-    \centering
-    \begin{minipage}{0.30\textwidth}
-        \centering
+    \begin{minipage}{0.40\textwidth}
         \includegraphics[width=\textwidth]{Images/Our data/part1 correlation matrices.png}
         \caption{Correlation matrices for each muscle}
     \end{minipage}
-    \hspace{40pt}
+\end{figure}
+\begin{figure}[H]
     \begin{minipage}{0.57\textwidth}
-        \centering
         \includegraphics[width=\textwidth]{Images/Our data/part1 delay values for each muscle.png}
+        \captionsetup{justification=raggedright, singlelinecheck=false}
         \caption{Delay values from cross-correlation for each muscle}
+        \label{fig:example}
     \end{minipage}
 \end{figure}
 
-\vspace{10pt}
+From the right image it can be seen that the cross-correlation analysis reveals a consistent temporal delay between our reconstructed envelopes and those computed by the MCI system. The estimated delays range from -38.5 ms to -40.5 ms across the four muscles, indicating that our envelopes systematically lead the MCI envelopes by approximately 40 ms.
+
+The similarity of these values across all muscles suggests that the delay is relatively consistent. This behavior is consistent with the different filtering approaches: our implementation uses zero-phase filtering (\texttt{filtfilt}), whereas the MCI operates in real time and therefore introduces a processing delay.
+
+\vspace{60pt}
 Subsequently, the two envelopes are overlapped, using a time window of 30 seconds, to allow a visual comparison: 
 
 \begin{figure}[H]
@@ -72,5 +88,17 @@ Subsequently, the two envelopes are overlapped, using a time window of 30 second
         }
 \end{figure}
 
-At the end, signals are converted from a sampling frequency of 2000Hz to 100Hz. The downsampling is done only after the filtering and the envelopes computation, since raw EMG signals contain high frequency components that would be lost or altered reducing beforehand the sampling frequency. 
+Here, the main observations are:
+\begin{itemize}
+    \item R biceps: the two curves generally follow the same trend, although the MCI envelope exhibits some peaks with higher amplitudes.
+    \item L biceps: a good agreement can be observed between the two envelopes, both during activation phases and periods of rest.
+    \item L trapezius: the curves show an overall similar trend, although some differences in peak amplitudes are present.
+    \item R trapezius: a good overall agreement can be observed, particularly during the initial activation phase, with some differences in subsequent peaks. 
+\end{itemize}
 
+At the end, signals are converted from a sampling frequency of 2000Hz to 100Hz. The downsampling is done only after the filtering and the envelopes computation, because raw EMG signals contain high frequency components that would be lost or altered reducing beforehand the sampling frequency. 
+
+\subsubsection{Overall considerations}
+The plots show that the implemented preprocessing pipeline produces activation envelopes that generally reproduce the trends of those computed by the MCI system. The most noticeable differences concern the amplitude of some peaks and their temporal alignment.
+
+These discrepancies may be attributed to the different filtering approaches: our implementation uses \texttt{filtfilt}, which does not introduce phase delay, whereas the MCI system processes signals in real time.
