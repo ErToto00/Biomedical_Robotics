@@ -1,2 +1,36 @@
-\vspace{10pt}
-\section{Part 5: Robot reaching: driving a 2-link robot arm with our cursor}
+\section{Overview and Objective}
+This part of the code implements trajectory tracking (a reaching task) for a planar robot arm with two revolute joints ($L_1 = L_2 = 0.30\text{ m}$), driven by the position of the screen cursor. The goal is to compute the joint trajectory $q(t) = [q_1(t), q_2(t)]^T$ required to make the end-effector (hand) follow the spatial reference derived from the screen coordinates.
+
+\subsection{Code Pipeline and Mathematical Formulation}
+
+\begin{enumerate}
+	\item \textbf{Coordinate Mapping (Screen Frame $\to$ Robot Frame):}
+	Cursor and target coordinates in centimeters relative to the screen frame ($y$-axis pointing downward) are centered at the origin, scaled to an operational screen width of $0.40\text{ m}$, inverted along the $y$-axis, and finally translated into the robot frame ($[0, 0.40]\text{ m}$ relative to the shoulder):
+	\begin{equation*}
+		p_{\text{robot}} = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix} \cdot \left( \frac{p_{\text{screen}} - p_{\text{center,cm}}}{100} \cdot S \right) + p_{\text{center,robot}}
+	\end{equation*}
+	
+	\item \textbf{Reference Velocity Computation:}
+	The desired end-effector velocity $v_{\text{ref}} = [\dot{x}_{\text{ref}}, \dot{y}_{\text{ref}}]^T$ is calculated via numerical differentiation of the reference position over time using MATLAB's \texttt{gradient(handRef, dt)} function.
+	
+	\item \textbf{Inverse Kinematics for Initial Condition:}
+	At the first sample ($k=1$), the initial joint configuration $q(1) = [q_1, q_2]^T$ is solved using analytical inverse kinematics (elbow-down configuration):
+	\begin{align*}
+		q_2 &= \arccos\left(\frac{x^2 + y^2 - L_1^2 - L_2^2}{2 L_1 L_2}\right) \\
+		q_1 &= \text{atan2}(y, x) - \text{atan2}(L_2 \sin q_2, L_1 + L_2 \cos q_2)
+	\end{align*}
+	
+	\item \textbf{Kinematic Integration and Feedback Correction (Resolved-Rate Control):}
+	For each time step $k$, forward kinematics and the Jacobian matrix $J(q)$ are computed:
+	\begin{equation*}
+		J(q) = \begin{bmatrix} -L_1 s_1 - L_2 s_{12} & -L_2 s_{12} \\ L_1 c_1 + L_2 c_{12} & L_2 c_{12} \end{bmatrix}
+	\end{equation*}
+	The joint velocities $\dot{q}$ are derived by inverting the Jacobian matrix while incorporating a proportional correction term ($K_{\text{corr}} = 10\text{ s}^{-1}$) to suppress numerical drift and tracking offsets:
+	\begin{equation*}
+		\dot{q}_k = J(q_k)^{-1} \left( v_{\text{ref}, k} + K_{\text{corr}} (p_{\text{ref}, k} - p_{\text{arm}, k}) \right)
+	\end{equation*}
+	Joint positions are then updated using Euler integration: $q_{k+1} = q_k + \dot{q}_k \cdot \Delta t$.
+	
+	\item \textbf{Performance Evaluation and Visualization:}
+	The algorithm computes the mean and maximum tracking errors (in mm) and tracks the minimum value of $|\det(J)|$ to monitor proximity to kinematic singularities. Finally, it plots the spatio-temporal joint trajectories and animates the 2-link robotic arm in real time.
+\end{enumerate}

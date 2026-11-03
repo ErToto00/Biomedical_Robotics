@@ -1,3 +1,14 @@
-\contentsline {section}{\numberline {1}\large {Introduction}}{2}{}%
-\contentsline {subsection}{\numberline {1.1}MCI}{2}{}%
-\contentsline {section}{\numberline {2}\large {Part 1}}{2}{}%
+\contentsline {section}{\numberline {1}Part 1: EMG Signal Preprocessing and Envelope Extraction}{2}{}%
+\contentsline {subsection}{\numberline {1.1}Data organization}{2}{}%
+\contentsline {subsection}{\numberline {1.2}Part 1 solution}{2}{}%
+\contentsline {subsubsection}{\numberline {1.2.1}Preprocessing steps for each muscle}{3}{}%
+\contentsline {subsubsection}{\numberline {1.2.2}Comparison between the reconstructed and MCI registered envelopes}{4}{}%
+\contentsline {subsubsection}{\numberline {1.2.3}Overall considerations}{5}{}%
+\contentsline {section}{\numberline {2}Part 2: MCI Mapping and Cursor Velocity Computation}{6}{}%
+\contentsline {section}{\numberline {3}Part 3: Cursor Trajectory Reconstruction and Error Analysis}{6}{}%
+\contentsline {subsection}{\numberline {3.1}Reaching Analysis Code Overview}{6}{}%
+\contentsline {section}{\numberline {4}Part 4: Target Reaching Performance Analysis}{7}{}%
+\contentsline {subsection}{\numberline {4.1}Target selection}{7}{}%
+\contentsline {subsection}{\numberline {4.2}Performance analysis}{8}{}%
+\contentsline {section}{\numberline {5}Overview and Objective}{8}{}%
+\contentsline {subsection}{\numberline {5.1}Code Pipeline and Mathematical Formulation}{9}{}%

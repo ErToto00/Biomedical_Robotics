@@ -58,34 +58,30 @@ The four muscles exhibit different activation patterns:
 In the second part, a quantitative comparison is performed between the reconstructed envelopes \texttt{envOursNorm} and the ones registered by the MCI system \texttt{envMCI}. The correlation matrix between the two envelopes is computed for each muscle to assess how the respective trends are similar. Then, the cross-correlation between signals is computed. With this one, the corresponding delay at the maximum value of the cross-correlation is identified, and it is converted from samples to milliseconds. 
 
 Here, the results are shown from the Command Window:
-
 \begin{figure}[H]
-    \begin{minipage}{0.40\textwidth}
-        \includegraphics[width=\textwidth]{Images/Our data/part1 correlation matrices.png}
-        \caption{Correlation matrices for each muscle}
-    \end{minipage}
-\end{figure}
-\begin{figure}[H]
-    \begin{minipage}{0.57\textwidth}
-        \includegraphics[width=\textwidth]{Images/Our data/part1 delay values for each muscle.png}
-        \captionsetup{justification=raggedright, singlelinecheck=false}
-        \caption{Delay values from cross-correlation for each muscle}
-        \label{fig:example}
-    \end{minipage}
+	\begin{subfigure}{0.4\textwidth}
+    	\includegraphics[width=\textwidth]{Images/Our data/part1 correlation matrices.png}
+    	\caption{Correlation matrices for each muscle}
+	\end{subfigure}
+	\begin{subfigure}{0.6\textwidth}
+	    \includegraphics[width=\textwidth]{Images/Our data/part1 delay values for each muscle.png}
+	    \captionsetup{justification=raggedright, singlelinecheck=false}
+	    \caption{Delay values from cross-correlation for each muscle}
+	    \label{fig:example}
+	\end{subfigure}
 \end{figure}
 
 From the right image it can be seen that the cross-correlation analysis reveals a consistent temporal delay between our reconstructed envelopes and those computed by the MCI system. The estimated delays range from -38.5 ms to -40.5 ms across the four muscles, indicating that our envelopes systematically lead the MCI envelopes by approximately 40 ms.
 
-The similarity of these values across all muscles suggests that the delay is relatively consistent. This behavior is consistent with the different filtering approaches: our implementation uses zero-phase filtering (\texttt{filtfilt}), whereas the MCI operates in real time and therefore introduces a processing delay.
+The similarity of these values across all muscles suggests that the delay is relatively consistent. This behaviour is consistent with the different filtering approaches: our implementation uses zero-phase filtering (\texttt{filtfilt}), whereas the MCI operates in real time and therefore introduces a processing delay.
 
-\vspace{60pt}
+\vspace{10pt}
 Subsequently, the two envelopes are overlapped, using a time window of 30 seconds, to allow a visual comparison: 
 
 \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{Images/Our data/envelope plots.png}
-        \caption{Overlapped MCI and reconstructed envelopes
-        }
+        \includegraphics[width=0.58\textwidth]{Images/Our data/envelope plots.png}
+        \caption{Overlapped MCI and reconstructed envelopes}
 \end{figure}
 
 Here, the main observations are:
