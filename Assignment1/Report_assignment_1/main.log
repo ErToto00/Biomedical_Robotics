@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.5.7)  2 NOV 2026 17:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.5.7)  3 NOV 2026 17:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1188,7 +1188,23 @@ File: Images/Our data/reach time and overshoots.png Graphic file (type png)
 Package pdftex.def Info: Images/Our data/reach time and overshoots.png  used on
  input line 20.
 (pdftex.def)             Requested size: 483.69687pt x 308.41745pt.
-) (Part_5.tex [8 <./Images/Our data/reach time and overshoots.png>]) [9]
+) (Part_5.tex [8 <./Images/Our data/reach time and overshoots.png>]
+<Images/Our data/resolved-rate control.png, id=58, 572.1375pt x 367.97475pt>
+File: Images/Our data/resolved-rate control.png Graphic file (type png)
+<use Images/Our data/resolved-rate control.png>
+Package pdftex.def Info: Images/Our data/resolved-rate control.png  used on inp
+ut line 45.
+(pdftex.def)             Requested size: 435.32422pt x 279.98375pt.
+ [9]
+<Images/Our data/robot arm animation.png, id=64, 400.49625pt x 371.58826pt>
+File: Images/Our data/robot arm animation.png Graphic file (type png)
+<use Images/Our data/robot arm animation.png>
+Package pdftex.def Info: Images/Our data/robot arm animation.png  used on input
+ line 67.
+(pdftex.def)             Requested size: 266.03474pt x 246.84793pt.
+)
+[10 <./Images/Our data/resolved-rate control.png>] [11 <./Images/Our data/robot
+ arm animation.png>]
 
 enddocument/afterlastpage (AED): lastpage setting LastPage.
 (main.aux)
@@ -1201,10 +1217,10 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 27537 strings out of 467871
- 526915 string characters out of 5435212
- 1444608 words of memory out of 5000000
- 55932 multiletter control sequences out of 15000+600000
+ 27553 strings out of 467871
+ 527623 string characters out of 5435212
+ 1443735 words of memory out of 5000000
+ 55948 multiletter control sequences out of 15000+600000
  655137 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,12n,104p,1195b,803s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1217,9 +1233,9 @@ courier/ucrr8a.pfb><C:/MIKTEX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/MIKTEX/fo
 nts/type1/urw/helvetic/uhvr8a.pfb><C:/MIKTEX/fonts/type1/urw/times/utmb8a.pfb><
 C:/MIKTEX/fonts/type1/urw/times/utmr8a.pfb><C:/MIKTEX/fonts/type1/urw/times/utm
 ri8a.pfb>
-Output written on main.pdf (10 pages, 348947 bytes).
+Output written on main.pdf (12 pages, 404416 bytes).
 PDF statistics:
- 118 PDF objects out of 1000 (max. 8388607)
+ 128 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 48 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 58 words of extra memory for PDF output out of 10000 (max. 10000000)
 
